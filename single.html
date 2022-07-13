@@ -221,24 +221,24 @@
   ];
   let step = 0;
 
-  window.addEventListener('keyup', (e) => {
-    if (e.key === " " ||
-      e.code === "Space" ||
-      e.keyCode === 32
-    ) {
-      e.preventDefault();
-      const steps = window.innerWidth > 2000 ? stepsXL :
-        window.innerWidth > 1500 ? stepsLG :
-        window.innerWidth > 600 ? stepsMD : stepsSM;
-      if (steps[step]) {
-        console.log(steps[step])
-        zoomToStep(steps[step]);
-        step += 1;
-      } else {
-        step = 0;
-      }
-    }
-  });
+  // window.addEventListener('keyup', (e) => {
+  //   if (e.key === " " ||
+  //     e.code === "Space" ||
+  //     e.keyCode === 32
+  //   ) {
+  //     e.preventDefault();
+  //     const steps = window.innerWidth > 2000 ? stepsXL :
+  //       window.innerWidth > 1500 ? stepsLG :
+  //       window.innerWidth > 600 ? stepsMD : stepsSM;
+  //     if (steps[step]) {
+  //       console.log(steps[step])
+  //       zoomToStep(steps[step]);
+  //       step += 1;
+  //     } else {
+  //       step = 0;
+  //     }
+  //   }
+  // });
 
   const zoomToStep = (step) => {
     console.log(lightbox)
