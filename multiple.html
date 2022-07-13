@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="photoswipe/photoswipe.css">
+</head>
+<body>
+
+<div class="pswp-gallery pswp-gallery--single-column" id="gallery--getting-started">
+    <a href="assets/images/1.webp"
+       data-pswp-width="2070"
+       data-pswp-height="3150"
+       target="_blank">
+        <img src="assets/images/1.webp" alt=""/>
+    </a>
+</div>
+
+
+<script type="module">
+
+  // Simple fullscreen API
+  const fullscreenAPI = getFullscreenAPI();
+
+  // Create custom container
+  // which will be stretched to fullscreen.
+  //
+  // (we can not use PhotoSwipe root element (.pswp),
+  //  as it is created only after openPromise is resolved)
+  //
+  const pswpContainer = getContainer();
+
+  function getFullscreenPromise() {
+    // Always resolve promise,
+    // as wa want to open lightbox
+    // (no matter if fullscreen is supported or not)
+    return new Promise((resolve) => {
+      if (!fullscreenAPI || fullscreenAPI.isFullscreen()) {
+        // fullscreen API not supported, or already fullscreen
+        resolve();
+        return;
+      }
+
+      document.addEventListener(fullscreenAPI.change, (event) => {
+        pswpContainer.style.display = 'block';
+        // delay to make sure that browser fullscreen animation is finished
+        setTimeout(function () {
+          resolve();
+        }, 300);
+      }, {once: true});
+
+      fullscreenAPI.request(pswpContainer);
+    });
+  }
+
+  // Include Lightbox
+  import PhotoSwipeLightbox from './photoswipe/photoswipe-lightbox.esm.js';
+
+  const lightbox = new PhotoSwipeLightbox({
+    // may select multiple "galleries"
+    gallery: '#gallery--getting-started',
+
+    // Elements within gallery (slides)
+    children: 'a',
+    clickToCloseNonZoomable: false,
+    // Add function that returns promise
+    openPromise: getFullscreenPromise,
+
+    // Append PhotoSwipe to our container
+    appendToEl: fullscreenAPI ? pswpContainer : document.body,
+
+    // disable opening/closing animations
+    showAnimationDuration: 0,
+    hideAnimationDuration: 0,
+
+    // setup PhotoSwipe Core dynamic import
+    pswpModule: () => import('./photoswipe/photoswipe.esm.js')
+  });
+
+  const stepsXL = [
+    {
+      x: 200,
+      y: 130,
+      zoom: 1.5
+    },
+    {
+      x: 200,
+      y: 730,
+      zoom: 1.5
+    },
+    {
+      x: 200,
+      y: 1330,
+      zoom: 1.5
+    }
+  ];
+  const stepsLG = [
+    {
+      x: 200,
+      y: 100,
+      zoom: 1.2
+    },
+    {
+      x: 2000,
+      y: 100,
+      zoom: 1.2
+    },
+    {
+      x: 200,
+      y: 540,
+      zoom: 1.2
+    },
+    {
+      x: 2000,
+      y: 540,
+      zoom:1.2
+    },
+    {
+      x: 500,
+      y: 990,
+      zoom: 0.9
+    },
+  ];
+  const stepsMD = [
+    {
+      x: 100,
+      y: 70,
+      zoom: 1
+    },
+    {
+      x: 2000,
+      y: 0,
+      zoom: .6
+    },
+    {
+      x: 100,
+      y: 600,
+      zoom: 1
+    },
+    {
+      x: 2000,
+      y: 600,
+      zoom: 0.6
+    },
+    {
+      x: 100,
+      y: 2000,
+      zoom: .4
+    }
+  ];
+  const stepsSM = [
+    {
+      x: 37,
+      y: 100,
+      zoom: .6
+    },
+    {
+      x: 220,
+      y: 100,
+      zoom: .6
+    },
+    {
+      x: 1000,
+      y: 100,
+      zoom: .4
+    },
+    {
+      x: 37,
+      y: 500,
+      zoom: .6
+    },
+    {
+      x: 220,
+      y: 500,
+      zoom: .6
+    },
+    {
+      x: 1000,
+      y: 100,
+      zoom: .4
+    },
+    {
+      x: 37,
+      y: 2000,
+      zoom: .6
+    },
+    {
+      x: 220,
+      y: 2000,
+      zoom: .5
+    },
+    {
+      x: 2000,
+      y: 2000,
+      zoom: .5
+    },
+  ];
+  let step = 0;
+  listenForClick(goToNextStep);
+  window.addEventListener('keyup', (e) => {
+    if (e.key === " " ||
+      e.code === "Space" ||
+      e.keyCode === 32
+    ) {
+      goToNextStep(e)
+    }
+  });
+
+  const zoomToStep = (step) => {
+    console.log(lightbox)
+    lightbox.pswp.currSlide.zoomAndPanToInitial();
+    // setTimeout(() => {
+    lightbox.pswp.currSlide.zoomTo(
+      step.zoom, // slide zoom level, 1 - original image size
+      {x: step.x, y: step.y}, // zoom center point
+      500, // transition duration, can be 0
+      true // wether pan/zoom bounds should be ignored
+    );
+    // }, 550);
+  }
+  lightbox.on('close', () => {
+    pswpContainer.style.display = 'none';
+    if (fullscreenAPI && fullscreenAPI.isFullscreen()) {
+      fullscreenAPI.exit();
+    }
+  });
+  lightbox.init();
+
+  // Simple fullscreen API helper,
+  // supports unprefixed and webkit-prefixed versions
+  function getFullscreenAPI() {
+    let api;
+    let enterFS;
+    let exitFS;
+    let elementFS;
+    let changeEvent;
+    let errorEvent;
+
+    if (document.documentElement.requestFullscreen) {
+      enterFS = 'requestFullscreen';
+      exitFS = 'exitFullscreen';
+      elementFS = 'fullscreenElement';
+      changeEvent = 'fullscreenchange';
+      errorEvent = 'fullscreenerror';
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      enterFS = 'webkitRequestFullscreen';
+      exitFS = 'webkitExitFullscreen';
+      elementFS = 'webkitFullscreenElement';
+      changeEvent = 'webkitfullscreenchange';
+      errorEvent = 'webkitfullscreenerror';
+    }
+
+    if (enterFS) {
+      api = {
+        request: function (el) {
+          if (enterFS === 'webkitRequestFullscreen') {
+            el[enterFS](Element.ALLOW_KEYBOARD_INPUT);
+          } else {
+            el[enterFS]();
+          }
+        },
+
+        exit: function () {
+          return document[exitFS]();
+        },
+
+        isFullscreen: function () {
+          return document[elementFS];
+        },
+
+        change: changeEvent,
+        error: errorEvent
+      };
+    }
+
+    return api;
+  }
+
+  function getContainer() {
+    const pswpContainer = document.createElement('div');
+    pswpContainer.style.background = '#000';
+    pswpContainer.style.width = '100%';
+    pswpContainer.style.height = '100%';
+    pswpContainer.style.display = 'none';
+    document.body.appendChild(pswpContainer);
+    return pswpContainer;
+  }
+
+  function goToNextStep(e) {
+    e.preventDefault();
+    const steps = window.innerWidth > 2000 ? stepsXL :
+      window.innerWidth > 1500 ? stepsLG :
+        window.innerWidth > 600 ? stepsMD : stepsSM;
+    if (steps[step]) {
+      console.log(steps[step])
+      zoomToStep(steps[step]);
+      step += 1;
+    } else {
+      step = 0;
+    }
+  }
+
+  function listenForClick(callBack) {
+    window.addEventListener('touchstart', function (e) {
+      e.preventDefault(); // to disable browser default zoom on double tap
+      callBack(e);
+    })
+  }
+</script>
+</body>
+</html>
