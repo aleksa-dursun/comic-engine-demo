@@ -44,10 +44,10 @@
       document.addEventListener(fullscreenAPI.change, (event) => {
         pswpContainer.style.display = 'block';
         // delay to make sure that browser fullscreen animation is finished
-        setTimeout(function() {
+        setTimeout(function () {
           resolve();
         }, 300);
-      }, { once: true });
+      }, {once: true});
 
       fullscreenAPI.request(pswpContainer);
     });
@@ -62,7 +62,7 @@
 
     // Elements within gallery (slides)
     children: 'a',
-
+    clickToCloseNonZoomable: false,
     // Add function that returns promise
     openPromise: getFullscreenPromise,
 
@@ -77,7 +77,7 @@
     pswpModule: () => import('./photoswipe/photoswipe.esm.js')
   });
 
-  const stepsXL  = [
+  const stepsXL = [
     {
       x: 0,
       y: 0,
@@ -99,7 +99,7 @@
       zoom: 3.3
     },
   ];
-  const stepsLG  = [
+  const stepsLG = [
     {
       x: 0,
       y: 0,
@@ -131,7 +131,7 @@
       zoom: 2.3
     },
   ];
-  const stepsMD  = [
+  const stepsMD = [
     {
       x: 0,
       y: 0,
@@ -163,7 +163,7 @@
       zoom: 1.8
     },
   ];
-  const stepsSM  = [
+  const stepsSM = [
     {
       x: 0,
       y: 0,
@@ -196,23 +196,13 @@
     },
   ];
   let step = 0;
-
+  listenForClick(goToNextStep);
   window.addEventListener('keyup', (e) => {
     if (e.key === " " ||
       e.code === "Space" ||
       e.keyCode === 32
     ) {
-      e.preventDefault();
-      const steps = window.innerWidth > 2000 ? stepsXL :
-        window.innerWidth > 1500 ? stepsLG :
-        window.innerWidth > 600 ? stepsMD : stepsSM;
-      if (steps[step]) {
-        console.log(steps[step])
-        zoomToStep(steps[step]);
-        step += 1;
-      } else {
-        step = 0;
-      }
+      goToNextStep(e)
     }
   });
 
@@ -284,7 +274,7 @@
     }
 
     return api;
-  };
+  }
 
   function getContainer() {
     const pswpContainer = document.createElement('div');
@@ -294,6 +284,27 @@
     pswpContainer.style.display = 'none';
     document.body.appendChild(pswpContainer);
     return pswpContainer;
+  }
+
+  function goToNextStep(e) {
+    e.preventDefault();
+    const steps = window.innerWidth > 2000 ? stepsXL :
+      window.innerWidth > 1500 ? stepsLG :
+        window.innerWidth > 600 ? stepsMD : stepsSM;
+    if (steps[step]) {
+      console.log(steps[step])
+      zoomToStep(steps[step]);
+      step += 1;
+    } else {
+      step = 0;
+    }
+  }
+
+  function listenForClick(callBack) {
+    window.addEventListener('touchstart', function (e) {
+      e.preventDefault(); // to disable browser default zoom on double tap
+      callBack(e);
+    })
   }
 </script>
 </body>
